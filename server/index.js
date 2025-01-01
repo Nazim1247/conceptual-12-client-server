@@ -36,7 +36,7 @@ const verifyToken = async (req, res, next) => {
   })
 }
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.mq0mae1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.9njqe.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -51,7 +51,7 @@ async function run() {
     // Generate jwt token
     app.post('/jwt', async (req, res) => {
       const email = req.body
-      const token = jwt.sign(email, process.env.ACCESS_TOKEN_SECRET, {
+      const token = jwt.sign(email, process.env.SECRET_TOKEN, {
         expiresIn: '365d',
       })
       res
