@@ -10,7 +10,7 @@ const port = process.env.PORT || 9000
 const app = express()
 // middleware
 const corsOptions = {
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
   credentials: true,
   optionSuccessStatus: 200,
 }
@@ -26,7 +26,7 @@ const verifyToken = async (req, res, next) => {
   if (!token) {
     return res.status(401).send({ message: 'unauthorized access' })
   }
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+  jwt.verify(token, process.env.SECRET_TOKEN, (err, decoded) => {
     if (err) {
       console.log(err)
       return res.status(401).send({ message: 'unauthorized access' })
@@ -48,6 +48,29 @@ const client = new MongoClient(uri, {
 })
 async function run() {
   try {
+
+    const db = client.db('plantNat-session')
+    const usersCollection = db.collection('users')
+    const plantsCollection = db.collection('plants')
+
+    // save or update a user in db
+    app.post('/users/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = req.body;
+      // check if user exist in db
+      const isExist = await usersCollection.findOne(query)
+      if (isExist) {
+        return res.send(isExist)
+      }
+      const result = await usersCollection.insertOne({
+        ...user,
+        role: 'customer',
+        timestamp: Date.now
+      });
+      res.send(result);
+    })
+
     // Generate jwt token
     app.post('/jwt', async (req, res) => {
       const email = req.body
@@ -75,6 +98,27 @@ async function run() {
       } catch (err) {
         res.status(500).send(err)
       }
+    })
+
+    // save a plant in db
+    app.post('/plants', verifyToken, async (req, res) => {
+      const plant = req.body;
+      const result = await plantsCollection.insertOne(plant)
+      res.send(result);
+    })
+
+    // get all plants
+    app.get('/plants', async (req, res) => {
+      const result = await plantsCollection.find().toArray()
+      res.send(result);
+    })
+
+    // get a plant by id
+    app.get('plants/:id',async (req,res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await plantsCollection.findOne(query);
+      res.send(result);
     })
 
     // Send a ping to confirm a successful connection
