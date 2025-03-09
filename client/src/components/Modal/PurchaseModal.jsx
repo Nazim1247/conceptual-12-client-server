@@ -10,9 +10,11 @@ import { Fragment, useEffect, useState } from 'react'
 import Button from '../Shared/Button/Button'
 import useAuth from '../../hooks/useAuth'
 import toast from 'react-hot-toast'
+import useAxiosSecure from '../../hooks/useAxiosSecure'
 
-const PurchaseModal = ({ closeModal, isOpen, plant }) => {
+const PurchaseModal = ({ closeModal, isOpen, plant, refetch }) => {
   const {user} = useAuth();
+  const axiosSecure = useAxiosSecure();
   const {category,name,price,seller,quantity, _id} = plant || {};
   const [totalPrice, setTotalPrice] = useState(price)
   const [totalQuantity, setTotalQuantity] = useState(1);
@@ -40,7 +42,19 @@ const PurchaseModal = ({ closeModal, isOpen, plant }) => {
   // Total Price Calculation
 
   const handleOrder = async ()=>{
-console.log(parchesInfo)
+// console.log(parchesInfo)
+   try {
+    // save data in db
+    await axiosSecure.post('/orders', parchesInfo)
+    // decrease quantity from plant collection
+    await axiosSecure.patch(`/plant/quantity/${_id}`, {quantityUpdate: totalQuantity})
+    refetch()
+    toast.success('Order Successfully!!')
+   } catch (error) {
+    console.log(error)
+   }finally{
+    closeModal();
+   }
   }
 
   const handleQuantity = value =>{

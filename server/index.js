@@ -52,6 +52,7 @@ async function run() {
     const db = client.db('plantNat-session')
     const usersCollection = db.collection('users')
     const plantsCollection = db.collection('plants')
+    const ordersCollection = db.collection('orders')
 
     // save or update a user in db
     app.post('/users/:email', async (req, res) => {
@@ -118,6 +119,25 @@ async function run() {
       const id = req.params.id;
       const query = {_id: new ObjectId(id)};
       const result = await plantsCollection.findOne(query);
+      res.send(result);
+    })
+
+    // save a order in db
+    app.post('/orders', verifyToken, async (req, res) => {
+      const orderInfo = req.body;
+      const result = await ordersCollection.insertOne(orderInfo);
+      res.send(result);
+    })
+
+    // manage plant quantity
+    app.patch('/plant/quantity/:id', verifyToken, async(req,res)=>{
+      const id = req.params.id;
+      const {quantityUpdate} = req.body;
+      const filter = {_id: new ObjectId(id)};
+      let updateDoc = {
+        $inc: {quantity: -quantityUpdate},
+      }
+      const result = await plantsCollection.updateOne(filter,updateDoc);
       res.send(result);
     })
 

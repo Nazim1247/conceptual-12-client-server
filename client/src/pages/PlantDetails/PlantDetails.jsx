@@ -12,7 +12,7 @@ import LoadingSpinner from '../../components/Shared/LoadingSpinner'
 const PlantDetails = () => {
   const {id} = useParams();
   // console.log(id)
-  const {data:plant = [], isLoading,refetch} = useQuery({
+  const {data:plant = [], isLoading, refetch} = useQuery({
     queryKey: ['plant',id],
     queryFn: async ()=>{
       const {data} = await axios.get(`${import.meta.env.VITE_API_URL}/plants/${id}`)
@@ -25,7 +25,7 @@ const PlantDetails = () => {
   const closeModal = () => {
     setIsOpen(false)
   }
-  console.log(plant)
+  // console.log(plant)
 
   const {category,description,image,name,price,seller,quantity} = plant || {};
 
@@ -107,7 +107,7 @@ const PlantDetails = () => {
           </div>
           <hr className='my-6' />
 
-          <PurchaseModal plant={plant} closeModal={closeModal} isOpen={isOpen} />
+          <PurchaseModal refetch={refetch} plant={plant} closeModal={closeModal} isOpen={isOpen} />
 
           <div className='md:col-span-3 order-first md:order-last mb-10'>
             {/* RoomReservation */}
